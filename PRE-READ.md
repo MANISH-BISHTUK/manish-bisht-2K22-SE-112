@@ -25,12 +25,12 @@ The interview process consists of two phases:
 1. **Problem Statement**: You'll receive a problem statement at the beginning
 2. **Development Time**: You'll have 90 minutes to design, build, and test your solution
 3. **Live Coding**: You'll be building the application in real-time
-4. **Submission**: Submit your code via GitHub repository as per the instructions
+4. **Submission**: Push your code to your GitHub repository
 
 ### After the Coding Round:
 
 Selected candidates will be invited for a 30-minute explanation interview where you'll:
-- Demonstrate your working application
+- Demo your working application
 - Explain your design decisions and approach
 - Discuss your code logic and implementation choices
 - Answer questions about your solution
@@ -61,6 +61,7 @@ Before the interview, ensure you have:
 
 4. **AI Agent/LLM**: You can choose and use any AI agent or LLM of your choice (e.g., ChatGPT, Gemini Code Assist, Cursor AI, GitHub Copilot, etc.)
 
+**Note**: Since you'll be using LLMs/AI assistants, your prompting skills will also be evaluated along with your code understanding and problem-solving approach.
 
 ## Interview Day Checklist
 
