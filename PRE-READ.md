@@ -40,15 +40,15 @@ Make sure:
 
 ## How to Submit
 
-1. **Create a private GitHub repository** named: `firstname-lastname-collegeid` (e.g., `john-doe-2024CS001`)
+1. Create a private GitHub repository named: `firstname-lastname-collegeid` (e.g., `john-doe-2024CS001`)
 
-2. **Organize your code**:
+2. Organize your code:
    - `src/` - all source code
    - `src/readme.md` - setup, API docs, sample requests
    - `prompt/llm-chat-export.txt` - your LLM conversation (if used)
    - `test-cases/test-cases.txt` - how to test each feature
 
-3. **Push your code**:
+3. Push your code:
    ```bash
    git add .
    git commit -m "Initial submission"
