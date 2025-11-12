@@ -38,6 +38,27 @@ Lets students redeem the credits they've received.
 - When credits are redeemed, they are **permanently deducted** from the student's balance
 - A student can only redeem credits they have received
 
+## Step-Up Challenges
+
+### 1. Credit Reset
+Add a mechanism to automatically reset each student's monthly credit balance to 100 at the start of a new month, with an optional carry-forward of up to 50 unused credits.
+
+**Business Rules:**
+- Each student's available credits reset to 100 at the start of each calendar month
+- Up to 50 unused credits from the previous month can be carried forward
+- If a student has more than 50 unused credits, only 50 can be carried forward
+- The monthly sending limit also resets to 100 credits
+
+### 2. Leaderboard
+Build a feature to list top recipients ranked by total credits received. Include both recognition counts and endorsement totals.
+
+**Business Rules:**
+- Rank students by total credits received (descending order)
+- If two students have the same total credits, rank by student ID (ascending order)
+- Include the total number of recognitions received by each student
+- Include the total number of endorsements received across all recognitions
+- Support a limit parameter to control how many top students are returned
+
 ## Deliverables
 
 ### Folder Structure
