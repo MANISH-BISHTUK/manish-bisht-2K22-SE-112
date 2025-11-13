@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boostly — Kudos & Credits (Demo)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#10b981}
+    body{font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180deg,#071026, #081226);color:#e6eef6;margin:0;padding:24px}
+    h1{margin:0 0 8px;font-size:22px}
+    .app{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+    label{display:block;font-size:12px;color:var(--muted);margin-top:8px}
+    input,select,button{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+    button.primary{background:linear-gradient(90deg,var(--accent),#06a57f);border:none;color:#021219;font-weight:600}
+    small{color:var(--muted)}
+    .students-list{max-height:320px;overflow:auto;margin-top:8px}
+    .student{padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);display:flex;justify-content:space-between;align-items:center}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:8px}
+    .flex{display:flex;gap:8px;align-items:center}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);text-align:left;font-size:13px}
+    .recognition{background:rgba(255,255,255,0.01);padding:10px;border-radius:8px;margin-bottom:8px}
+    .badge{background:#071b16;padding:4px 8px;border-radius:999px;font-size:12px;color:var(--muted)}
+    .danger{color:#ff8a8a}
+    .success{color:#9af5c5}
+    .small-btn{padding:6px;border-radius:6px;font-size:12px}
+    .footer{font-size:12px;color:var(--muted);margin-top:12px}
+    @media(max-width:900px){.app{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <h1>Boostly — boost morale, one kudos at a time</h1>
+  <div class="app">
+    <div>
+      <div class="card">
+        <strong>Students</strong>
+        <div style="margin-top:8px">
+          <label>Name</label>
+          <input id="newName" placeholder="e.g., Alice"/>
+          <label>Student ID (numeric)</label>
+          <input id="newId" placeholder="e.g., 101"/>
+          <button id="addStudent" class="primary" style="margin-top:8px">Add student</button>
+          <small>Default: each student receives 100 credits/month. Sending limit = 100/month.</small>
+        </div>
+
+        <div class="students-list" id="studentsList"></div>
+
+        <div style="margin-top:12px">
+          <strong>Simulate month tick</strong>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="forceReset" class="small-btn">Force month reset now</button>
+            <button id="clearData" class="small-btn danger">Clear all data</button>
+          </div>
+          <small class="muted">Real app would run reset at calendar month start; this demo lets you trigger it manually.</small>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <strong>Leaderboard</strong>
+        <label>Limit</label>
+        <input id="leaderLimit" type="number" min="1" value="5"/>
+        <button id="showLeaderboard" style="margin-top:8px" class="primary">Show</button>
+        <div id="leaderboard" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <strong>Recognitions (Latest)</strong>
+        <div id="recognitionsList"></div>
+      </div>
+
+      <div class="footer card" style="margin-top:12px">
+        <div>Rules summarized:</div>
+        <ul>
+          <li>Each student starts each month with <strong>100</strong> credits to send. Sender cannot send > their balance.</li>
+          <li>Monthly send limit = <strong>100</strong>. Can't recognize self.</li>
+          <li>Received credits increase recipient's available balance to send and are redeemable.</li>
+          <li>Redeem value = ₹5 per credit. Redeemable only from credits received (not initial grant).</li>
+          <li>Carry-forward up to <strong>50</strong> unused credits at month reset.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <strong>Recognize a peer</strong>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label>From (sender)</label>
+            <select id="fromSelect"></select>
+          </div>
+          <div>
+            <label>To (recipient)</label>
+            <select id="toSelect"></select>
+          </div>
+        </div>
+        <label>Credits to send</label>
+        <input id="creditsToSend" type="number" min="1" value="10"/>
+        <label>Message (optional)</label>
+        <input id="message" placeholder="Nice work on the project!" />
+        <button id="sendRecognition" class="primary" style="margin-top:8px">Send Recognition</button>
+        <div id="sendResult" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <strong>Endorse a Recognition</strong>
+        <label>Select Endorser</label>
+        <select id="endorserSelect"></select>
+        <label>Select Recognition</label>
+        <select id="recognitionSelect"></select>
+        <button id="endorseBtn" style="margin-top:8px" class="primary">Endorse</button>
+        <div id="endorseResult" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <strong>Redeem credits</strong>
+        <label>Redeemer</label>
+        <select id="redeemerSelect"></select>
+        <label>Credits to redeem (must be ≤ received - redeemed)</label>
+        <input id="creditsRedeem" type="number" min="1" value="10"/>
+        <button id="redeemBtn" class="primary" style="margin-top:8px">Redeem</button>
+        <div id="redeemResult" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <strong>Raw Data (localStorage)</strong>
+        <button id="dumpData">Show JSON</button>
+        <pre id="dump" style="max-height:200px;overflow:auto;margin-top:8px;background:#04111a;padding:8px;border-radius:8px"></pre>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*
+  Boostly demo SPA (single-file)
+  Data model stored in localStorage under 'boostly_v1'
+  - students: [{id, name, balance, sentThisMonth, totalCreditsReceived, totalRecognitions, totalEndorsements, redeemedCredits, lastSeenMonth}]
+  - recognitions: [{id, fromId, toId, amount, message, timestamp, endorsers:[endorserIds]}]
+  - meta: {lastResetMonth: 'YYYY-MM'}
+*/
+
+const STORAGE_KEY = 'boostly_v1';
+
+function nowMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return {students:[], recognitions:[], meta:{lastResetMonth: nowMonthKey()}};
+  }
+  try { return JSON.parse(raw); } catch(e) { return {students:[], recognitions:[], meta:{lastResetMonth: nowMonthKey()}}; }
+}
+
+function saveState(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+let state = loadState();
+
+// If first time, add sample students automatically
+if (state.students.length === 0) {
+  state.students.push(
+    createStudentObj(101,'Alice'),
+    createStudentObj(102,'Bob'),
+    createStudentObj(103,'Charlie'),
+    createStudentObj(104,'Diana')
+  );
+  // initial grant happens on creation: set balance = 100
+  state.students.forEach(s => { s.balance = 100; s.lastSeenMonth = nowMonthKey(); });
+  saveState(state);
+}
+
+/* --- Utilities --- */
+function createStudentObj(id,name){
+  return {
+    id: Number(id),
+    name: String(name),
+    balance: 0,                // available to send
+    sentThisMonth: 0,          // used against monthly send limit
+    totalCreditsReceived: 0,   // cumulative received (for leaderboard)
+    totalRecognitions: 0,      // number of times recognized
+    totalEndorsements: 0,      // derived later from recognitions but kept for quick access
+    redeemedCredits: 0,        // cumulative redeemed
+    lastSeenMonth: nowMonthKey()
+  };
+}
+
+function findStudent(id){ return state.students.find(s=>s.id==id); }
+function getRecognition(id){ return state.recognitions.find(r=>r.id==id); }
+
+function nextRecogId(){
+  return (state.recognitions.length? Math.max(...state.recognitions.map(r=>r.id))+1 : 1);
+}
+
+/* --- Month reset logic (auto if month changed) --- */
+function performMonthlyResetIfNeeded(){
+  const current = nowMonthKey();
+  if(state.meta.lastResetMonth === current) return; // already up-to-date
+
+  // carry-forward rule: up to 50 unused credits from previous month
+  state.students.forEach(s => {
+    const unused = Math.max(0, s.balance); // remaining credits at end of month
+    const carry = Math.min(unused, 50);
+    s.balance = 100 + carry;      // new month's available credits
+    s.sentThisMonth = 0;          // reset sending limit used
+    s.lastSeenMonth = current;
+  });
+  state.meta.lastResetMonth = current;
+  saveState(state);
+  alert('Monthly reset done. Each student now has 100 + carry(up to 50) credits. Sending limits reset.');
+}
+
+/* Run reset check on load */
+performMonthlyResetIfNeeded();
+
+/* --- UI wiring --- */
+const studentsListEl = document.getElementById('studentsList');
+const fromSelect = document.getElementById('fromSelect');
+const toSelect = document.getElementById('toSelect');
+const endorserSelect = document.getElementById('endorserSelect');
+const recognitionSelect = document.getElementById('recognitionSelect');
+const redeemerSelect = document.getElementById('redeemerSelect');
+const recognitionsList = document.getElementById('recognitionsList');
+const leaderboardEl = document.getElementById('leaderboard');
+
+function refreshUI(){
+  // students list
+  studentsListEl.innerHTML = '';
+  state.students.sort((a,b)=>a.id - b.id).forEach(s => {
+    const div = document.createElement('div'); div.className='student';
+    div.innerHTML = `<div>
+        <div style="font-weight:600">${s.name} <small class="muted">(#${s.id})</small></div>
+        <div class="muted" style="font-size:13px">Balance: <strong>${s.balance}</strong> &middot; Sent this month: ${s.sentThisMonth} &middot; Received total: ${s.totalCreditsReceived}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="muted" style="font-size:12px">Redeemable: ${Math.max(0, s.totalCreditsReceived - s.redeemedCredits)}</div>
+        <div style="margin-top:6px"><button class="small-btn" onclick="prefillSend(${s.id})">Send</button></div>
+      </div>`;
+    studentsListEl.appendChild(div);
+  });
+
+  // selects
+  [fromSelect,toSelect,endorserSelect,redeemerSelect].forEach(sel => {
+    sel.innerHTML = '<option value="">-- select --</option>';
+    state.students.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id; opt.text = `${s.name} (#${s.id})`;
+      sel.appendChild(opt);
+    });
+  });
+
+  // recognition select for endorsing
+  recognitionSelect.innerHTML = '<option value="">-- select --</option>';
+  state.recognitions.slice().reverse().forEach(r => {
+    const opt = document.createElement('option');
+    const from = findStudent(r.fromId), to = findStudent(r.toId);
+    opt.value = r.id;
+    opt.text = `#${r.id} ${from.name}→${to.name} [${r.amount}] (${r.endorsers.length}👍)`;
+    recognitionSelect.appendChild(opt);
+  });
+
+  // recognitions list (latest 20)
+  recognitionsList.innerHTML = '';
+  state.recognitions.slice().reverse().slice(0,40).forEach(r => {
+    const from = findStudent(r.fromId), to = findStudent(r.toId);
+    const div = document.createElement('div'); div.className='recognition';
+    div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <strong>${from.name}</strong> → <strong>${to.name}</strong> &middot; <span class="badge">${r.amount} cr</span>
+        <div class="muted" style="font-size:13px">${new Date(r.timestamp).toLocaleString()} &middot; ${r.message||''}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="margin-bottom:6px"><button class="small-btn" onclick="endorseFromUI(${r.id})">Endorse</button> <span class="muted">(${r.endorsers.length})</span></div>
+        <div class="muted" style="font-size:12px">endorsers: ${r.endorsers.map(id=>findStudent(id)?.name||id).join(', ')}</div>
+      </div>
+    </div>`;
+    recognitionsList.appendChild(div);
+  });
+
+  saveState(state);
+}
+
+/* Prefill send form */
+function prefillSend(id){
+  fromSelect.value = id;
+  toSelect.value = '';
+  document.getElementById('creditsToSend').value = 10;
+}
+
+/* --- Recognition logic --- */
+document.getElementById('addStudent').addEventListener('click', () => {
+  const name = document.getElementById('newName').value.trim();
+  const idVal = document.getElementById('newId').value.trim();
+  if(!name || !idVal) { alert('Enter name and numeric id'); return; }
+  const id = Number(idVal);
+  if(state.students.some(s=>s.id===id)){ alert('ID already exists'); return; }
+  const s = createStudentObj(id,name);
+  // initial monthly grant
+  s.balance = 100;
+  s.lastSeenMonth = nowMonthKey();
+  state.students.push(s);
+  saveState(state);
+  document.getElementById('newName').value=''; document.getElementById('newId').value='';
+  refreshUI();
+});
+
+document.getElementById('sendRecognition').addEventListener('click', () => {
+  const from = Number(fromSelect.value), to = Number(toSelect.value);
+  const amount = Math.trunc(Number(document.getElementById('creditsToSend').value));
+  const message = document.getElementById('message').value.trim();
+  const resultEl = document.getElementById('sendResult'); resultEl.innerText='';
+
+  if(!from || !to || !amount){ resultEl.innerText='Select from, to and enter valid amount'; return; }
+  if(from === to){ resultEl.innerText='Self-recognition is not allowed'; return; }
+
+  const sender = findStudent(from), recipient = findStudent(to);
+  if(!sender || !recipient){ resultEl.innerText='Invalid students selected'; return; }
+
+  // ensure month reset done before checking limits
+  performMonthlyResetIfNeeded();
+
+  // checks
+  if(amount <= 0){ resultEl.innerText='Amount must be positive'; return; }
+  if(sender.balance < amount){ resultEl.innerText=`Sender does not have enough balance (has ${sender.balance})`; return; }
+  if((sender.sentThisMonth + amount) > 100){ resultEl.innerText=`Sender would exceed monthly sending limit (100). Sent so far: ${sender.sentThisMonth}`; return; }
+
+  // proceed
+  sender.balance -= amount;
+  sender.sentThisMonth += amount;
+
+  recipient.balance += amount; // they can use sent credits to send later as well
+  recipient.totalCreditsReceived += amount;
+  recipient.totalRecognitions += 1;
+
+  const rec = {
+    id: nextRecogId(),
+    fromId: sender.id,
+    toId: recipient.id,
+    amount: amount,
+    message: message,
+    timestamp: Date.now(),
+    endorsers: []
+  };
+  state.recognitions.push(rec);
+  saveState(state);
+  resultEl.innerText = `Recognition sent: ${sender.name} → ${recipient.name} : ${amount} credits.`;
+  refreshUI();
+});
+
+/* --- Endorsements --- */
+document.getElementById('endorseBtn').addEventListener('click', () => {
+  const endorser = Number(endorserSelect.value);
+  const recId = Number(recognitionSelect.value);
+  const res = document.getElementById('endorseResult'); res.innerText='';
+
+  const r = getRecognition(recId);
+  if(!r){ res.innerText='Select a recognition'; return; }
+  if(!endorser){ res.innerText='Select an endorser'; return; }
+  if(r.fromId === endorser) { res.innerText='Sender can endorse but business normally allows anyone (we permit sender too)'; }
+  if(r.endorsers.includes(endorser)) { res.innerText='You already endorsed this recognition'; return; }
+
+  r.endorsers.push(endorser);
+  // Update recipient's totalEndorsements
+  const recp = findStudent(r.toId);
+  recp.totalEndorsements = (state.recognitions.filter(x=>x.toId===recp.id).reduce((acc,rec)=>acc + (rec.endorsers?.length||0),0));
+  saveState(state);
+  res.innerText = 'Endorsed!';
+  refreshUI();
+});
+
+/* Quick endorse button from recognition list (prefills endorser select then endorses using UI) */
+function endorseFromUI(recId){
+  // pick first student as endorser by default (or leave)
+  if(!state.students.length){ alert('No students'); return; }
+  endorserSelect.value = state.students[0].id;
+  recognitionSelect.value = recId;
+  // open small prompt to pick endorser quickly
+  const nameList = state.students.map(s=>`${s.id}:${s.name}`).join('\n');
+  const pick = prompt('Enter endorser id:\n' + nameList, state.students[0].id);
+  if(pick){ endorserSelect.value = Number(pick); document.getElementById('endorseBtn').click(); }
+}
+
+/* --- Redemption --- */
+document.getElementById('redeemBtn').addEventListener('click', () => {
+  const who = Number(redeemerSelect.value);
+  const credits = Math.trunc(Number(document.getElementById('creditsRedeem').value));
+  const res = document.getElementById('redeemResult'); res.innerText='';
+
+  if(!who || !credits){ res.innerText='Select redeemer and valid amount'; return; }
+  if(credits <= 0){ res.innerText='Amount must be positive'; return; }
+  const s = findStudent(who);
+  const redeemable = Math.max(0, s.totalCreditsReceived - s.redeemedCredits);
+  if(credits > redeemable){ res.innerText=`Cannot redeem more than received but unredeemed credits (${redeemable})`; return; }
+
+  // Do redemption: deduct from available balance as well
+  // Business: "Credits are converted into vouchers at ₹5 per credit. When credits are redeemed, they are permanently deducted from the student's balance"
+  s.redeemedCredits += credits;
+  // Also remove from s.balance (available to send)
+  s.balance = Math.max(0, s.balance - credits);
+
+  const value = credits * 5;
+  saveState(state);
+  res.innerText = `Redeemed ${credits} credits → ₹${value} voucher.`;
+  refreshUI();
+});
+
+/* --- Leaderboard --- */
+document.getElementById('showLeaderboard').addEventListener('click', () => {
+  const limit = Math.max(1, Math.trunc(Number(document.getElementById('leaderLimit').value) || 5));
+  // rank students by totalCreditsReceived desc, then id asc
+  const ranked = state.students.slice().sort((a,b)=>{
+    if(b.totalCreditsReceived !== a.totalCreditsReceived) return b.totalCreditsReceived - a.totalCreditsReceived;
+    return a.id - b.id;
+  }).slice(0, limit);
+
+  leaderboardEl.innerHTML = `<table><thead><tr><th>Rank</th><th>Student</th><th>Credits Received</th><th>Recognitions</th><th>Endorsements</th></tr></thead><tbody>${
+    ranked.map((s,i)=>`<tr><td>${i+1}</td><td>${s.name} (#${s.id})</td><td>${s.totalCreditsReceived}</td><td>${s.totalRecognitions}</td><td>${s.totalEndorsements || 0}</td></tr>`).join('')
+  }</tbody></table>`;
+});
+
+/* --- Misc controls --- */
+document.getElementById('forceReset').addEventListener('click', () => {
+  // Force an artificial new month by setting meta.lastResetMonth to last month and then running reset
+  const m = new Date(); m.setMonth(m.getMonth()-1);
+  const key = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
+  state.meta.lastResetMonth = key;
+  saveState(state);
+  performMonthlyResetIfNeeded();
+  refreshUI();
+});
+
+document.getElementById('clearData').addEventListener('click', () => {
+  if(confirm('Clear all saved Boostly demo data?')){ localStorage.removeItem(STORAGE_KEY); location.reload(); }
+});
+
+document.getElementById('dumpData').addEventListener('click', () => {
+  document.getElementById('dump').textContent = JSON.stringify(state, null, 2);
+});
+
+/* Dump initial recognitions into select and UI */
+refreshUI();
+
+/* Export some functions to window for inline button handlers */
+window.prefillSend = prefillSend;
+window.endorseFromUI = endorseFromUI;
+</script>
+</body>
+</html>
