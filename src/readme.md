@@ -21,6 +21,7 @@ This file should include:
 - HTTP methods (GET, POST, PUT, DELETE, etc.)
 - Request parameters and body structure
 
+
 ## Sample Requests and Responses
 - Example cURL commands or Postman requests
 - Sample JSON request bodies
